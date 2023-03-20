@@ -1,0 +1,26 @@
+각도 판별
+
+내 코드
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+int solution(int angle) {
+    int answer = 0;
+    if (angle>90&&angle<180){answer=3;}
+    else if (angle<90&&angle>0){answer=1;}
+    else if(angle==90){answer=2;}
+    else if(angle==180){answer=4;}
+    else{printf("invalid input");}
+    return answer;
+}
+
+좋은 코드
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+int solution(int ang) {
+    int ans = 1;    
+    return ang<90?1:ang==90?2:ang<180?3:4;
+}
