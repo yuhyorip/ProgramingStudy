@@ -1,0 +1,67 @@
+def solution(wallpaper):
+    answer = [5]
+    init=999
+    startX=init
+    startY=init
+    endX=init
+    endY=init
+    row=len(wallpaper)
+    col=len(wallpaper[0])
+    
+    for i in range(row):
+        j=0
+        while j<col:
+            if wallpaper[i][j]=='#':
+                if startX==init:
+                    startX=i
+                break
+            else:
+                j+=1
+            
+    for i in range(col):
+        j=0
+        while j<row:
+            if wallpaper[j][i]=='#':
+                if startY==init:
+                    startY=i
+                break
+            else:
+                j+=1
+    for i in range(row):
+        j=0
+        while j<col:
+            if wallpaper[row-i-1][j]=='#':
+                if endX==init:
+                    endX=row-i
+                break
+            else:
+                j+=1
+    for i in range(col):
+        j=0
+        while j<row:
+            if wallpaper[j][col-i-1]=='#':
+                if endY==init:
+                    endY=col-i
+                break
+            else:
+                j+=1
+    answer=[startX,startY,endX,endY]
+    return answer
+    
+    격자 바탕화면이 배열로 주어졌을때, 나는 위아래양옆에서 처음 파일을 만나는 곳을 찾기 위해 4개의 for문을 사용하였다.
+    다른 답안 코드를 보니 a,b 배열 두개를 만들고 이중 for문을 통해 배열을 탐색하면서 파일을 찾을 때마다 해당 index를 나눠서 저장한 후, min값과 max값을 통해
+    시작점과 끝점을 찾는다. 상당히 간결한 형태.
+    
+    
+def solution(wall):
+    a, b = [], []
+    for i in range(len(wall)):
+        for j in range(len(wall[i])):
+            if wall[i][j] == "#":
+                a.append(i)
+                b.append(j)
+    return [min(a), min(b), max(a) + 1, max(b) + 1]
+    
+    배울 점 : 내가 문제를 해결하기 위해 알아야 할 것이 무엇인지 잘 파악하기. 이 문제의 경우 모든 파일의 위치를 알면 쉽게 해결할 수 있는 문제였음.
+    
+    
