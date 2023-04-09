@@ -34,10 +34,7 @@ To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details
     
 위 두 가지 방법 중 적절히 사용하면 됨.
 
-본문으로 돌아가서, 위 코드를 실행하면 포인터 arr에 int 사이즈의 메모리를 사용자가 입력한 num1개 만큼 할당한다.
-...........................................
-
-파이썬의 동
+코드를 실행하면 포인터 arr에 int 사이즈의 메모리를 사용자가 입력한 num1개 만큼 할당한다.
 
 
 
