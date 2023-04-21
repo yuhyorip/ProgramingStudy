@@ -1,0 +1,179 @@
+from tkinter import*
+import pyautogui
+import win32api
+import win32con
+import time
+import tkinter.messagebox
+import multiprocessing as mp
+from pynput.keyboard import Key,Listener
+
+def Run(event):
+
+    win=Tk()
+    win.title("매크로 제작")
+    win.geometry("300x300")
+    win.option_add("Font","바탕 20")
+
+
+    #동작 리스트
+    global motions
+    motions=[]
+    
+
+    #동작 감지 함수
+    def MotionCapture():
+        
+        time.sleep(0.5)
+        state_left = win32api.GetKeyState(0x01)
+        state_right = win32api.GetKeyState(0x02)
+        def MC(l,r):
+            check=0
+            a = win32api.GetKeyState(0x01)
+            b = win32api.GetKeyState(0x02)
+            if a != l:
+                if a < 0:
+                    x,y=win32api.GetCursorPos()
+                    motions.append((x,y,"LP"))
+                    tmp=labMotionList.cget("text")
+                    textUpdate=tmp+"\n("+str(x)+","+str(y)+") Left Pressed"
+                    labMotionList.config(text=textUpdate)
+
+                else:
+                    x,y=win32api.GetCursorPos()
+                    motions.append((x,y,"LR"))
+                    tmp=labMotionList.cget("text")
+                    textUpdate=tmp+"\n("+str(x)+","+str(y)+") Left Released"
+                    labMotionList.config(text=textUpdate)
+                    check=1
+            if b != r:
+                if b < 0:
+                    x,y=win32api.GetCursorPos()
+                    motions.append((x,y,"RP"))
+                    tmp=labMotionList.cget("text")
+                    textUpdate=tmp+"\n("+str(x)+","+str(y)+") Right Pressed"
+                    labMotionList.config(text=textUpdate)
+
+                else:
+                    x,y=win32api.GetCursorPos()
+                    motions.append((x,y,"RR"))
+                    tmp=labMotionList.cget("text")
+                    textUpdate=tmp+"\n("+str(x)+","+str(y)+") Right Released"
+                    labMotionList.config(text=textUpdate)
+                    check=1
+
+            if check==0:
+                win.after(1,MC,a,b)
+        MC(state_left,state_right)
+
+    #동작 감지 버튼
+    btnMotionCapture=Button(win)
+    btnMotionCapture.config(text="동작 감지")
+    btnMotionCapture.config(command=MotionCapture)
+    btnMotionCapture.pack()
+
+    #동작 리스트 출력
+    labMotionList=Label(win)
+    labMotionList.config(text='')
+    labMotionList.pack()
+
+    #매크로 반복 횟수
+    def clearEntry(event):
+        if entIterNum.get()=="반복 횟수":
+            entIterNum.delete(0,len(entIterNum.get()))
+
+    entIterNum=Entry(win)
+    entIterNum.insert(0,"반복 횟수")
+    entIterNum.bind("<Button-1>",clearEntry)
+    entIterNum.pack()
+
+    global Max
+    global done
+    Max=0
+    done=0
+
+    #매크로 실행 횟수 
+    labMacroRunTime=Label(win)
+    labMacroRunTime.config(text="--/--")
+    labMacroRunTime.pack()
+
+    #매크로 실행 함수
+    def MacroRun():
+        try:    
+            Max=entIterNum.get()
+            IterNum=int(entIterNum.get())
+            labMacroRunTime.config(text="0/"+Max)
+            labMacroRunTime.update_idletasks()
+            time.sleep(0.3)
+            for i in range(IterNum):
+                if not event.is_set():
+                    for j in range(0,len(motions)):
+                        if motions[j][2]=="LP":
+                            win32api.SetCursorPos((motions[j][0],motions[j][1]))
+                            time.sleep(0.05)
+                            win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,motions[j][0],motions[j][1],0,0)
+                            time.sleep(0.05)
+                        elif motions[j][2]=="LR":
+                            win32api.mouse_event(win32con.MOUSEEVENTF_MOVE,motions[j][0]-motions[j-1][0],motions[j][1]-motions[j-1][1],0,0)
+                            time.sleep(0.05)
+                            win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,motions[j][0]-motions[j-1][0],motions[j][1]-motions[j-1][1],0,0)
+                            time.sleep(0.05)
+                        elif motions[j][2]=="RP":
+                            win32api.mouse_event(win32con.MOUSEEVENTF_MOVE,motions[j][0]-motions[j-1][0],motions[j][1]-motions[j-1][1],0,0)
+                            time.sleep(0.05)
+                            win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,motions[j][0]-motions[j-1][0],motions[j][1]-motions[j-1][1],0,0)
+                            time.sleep(0.05)
+                        elif motions[j][2]=="RR":
+                            win32api.mouse_event(win32con.MOUSEEVENTF_MOVE,motions[j][0]-motions[j-1][0],motions[j][1]-motions[j-1][1],0,0)
+                            time.sleep(0.05)
+                            win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,motions[j][0]-motions[j-1][0],motions[j][1]-motions[j-1][1],0,0)
+                            time.sleep(0.05)
+                    labMacroRunTime.config(text=str(i+1)+"/"+Max)
+                    labMacroRunTime.update_idletasks()
+                else:
+                    labMacroRunTime.config(text="--/--")
+                    labMacroRunTime.update_idletasks()
+                    event.clear()
+                    break   
+                
+        except ValueError:
+            tkinter.messagebox.showwarning(title="오류",message="입력값이 올바르지 않습니다")
+
+
+    #매크로 실행 버튼
+    btnMacroRun=Button(win)
+    btnMacroRun.config(text="실행")
+    btnMacroRun.config(command=MacroRun)
+    btnMacroRun.pack()
+
+    #동작 리스트 초기화 버튼
+    def initMotions():
+        global motions
+        motions=[]
+        labMotionList.config(text='')
+        labMacroRunTime.config(text='--/--')
+        entIterNum.delete(0,len(entIterNum.get()))
+        entIterNum.insert(0,"반복 횟수")
+
+    btnListInit=Button(win)
+    btnListInit.config(text="초기화",command=initMotions)
+    btnListInit.pack()
+
+    win.mainloop()
+
+def abc(event):   
+    
+    def on_press(key):
+        if str(key)=="'p'":
+            event.set()
+    
+    def on_release(key):
+        pass
+    
+    with Listener(on_press=on_press, on_release=on_release) as listener:
+            listener.join()
+
+if __name__ == "__main__":
+    event=mp.Event()
+    p = mp.Process(target=abc,args=(event,))
+    p.start()
+    Run(event)
