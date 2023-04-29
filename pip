@@ -20,3 +20,5 @@ python.exe -m pip install --upgrade pip
 근데도 안됨 > pip install pypiwin32 로 install 해줌
 
 Python Image Library (PIL) 설치하기 위해 > pip3 install image 
+
+pip install pyscreenshot 이것도 함
