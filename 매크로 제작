@@ -252,5 +252,39 @@ if __name__ == "__main__":
     p.start()
     Run(event)
 
+**이미지 선택 캡쳐**
+import time
+import pyscreenshot
+import win32api
+import pyautogui
+import win32con
 
+cord=[]
+state_left = win32api.GetKeyState(0x01)
+print(state_left)
+while True:
+    a = win32api.GetKeyState(0x01)
+    
+    if a != state_left:
+        if a < 0:
+            x1,y1=win32api.GetCursorPos()
+            cord.append(x1)
+            cord.append(y1)
+            print(x1)
+            state_left=a
+        elif a >= 0:
+            x2,y2=win32api.GetCursorPos()
+            cord.append(x2)
+            cord.append(y2)
+            break
+    time.sleep(0.01)
 
+pic = pyscreenshot.grab(bbox=(cord[0], cord[1], cord[2], cord[3]))
+#pic.save("ss.png")
+
+time.sleep(3)
+start = pyautogui.locateCenterOnScreen(pic)
+pyautogui.moveTo(start)
+#win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,)
+
+할 일 : 커서 바꾸기
