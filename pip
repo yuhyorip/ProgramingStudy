@@ -1,0 +1,20 @@
+시스템 환경 변수 편집 > 고급 > 환경 변수 > 시스템 변수 항목 중 'Path' 선택 > 새로 만들기
+
+C:\Users\<user name>\AppData\Local\Programs\Python\Python311\Scripts
+C:\Users\<user name>\AppData\Local\Programs\Python\Python311\
+
+(python 경로와 python 내 script 파일 경로)
+
+
+위 경로 두 개를 추가해주고 확인(모든 창 확인 눌러서 꺼야 함)
+
+win32api module 설치하려고 했는데 
+
+ERROR: Could not find a version that satisfies the requirement win32api (from versions: none)
+ERROR: No matching distribution found for win32api
+
+위 에러가 발생해서 pip를 업그레이드 버전으로 올려줌
+
+python.exe -m pip install --upgrade pip
+
+근데도 안됨 > pip install pypiwin32 로 install 해줌
