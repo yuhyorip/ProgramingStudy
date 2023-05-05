@@ -29,6 +29,7 @@ MOVE Result :(348, 347)
 (350,350)으로 안가고 오차가 있음 **
 
 
+import ctypes
 from tkinter import*
 import pyautogui
 import win32api
@@ -37,6 +38,10 @@ import time
 import tkinter.messagebox
 import multiprocessing as mp
 from pynput.keyboard import Key,Listener
+from tkinter import ttk
+import tkinterDnD
+import pyscreenshot
+from PIL import Image,ImageTk
 
 def Run(event):
 
@@ -198,7 +203,6 @@ def Run(event):
 
                         elif motions[j][2]=="D":
                             time.sleep(motions[j][0])
-                            
                     labMacroRunTime.config(text=str(i+1)+"/"+Max)
                     labMacroRunTime.update_idletasks()
                 else:
@@ -231,6 +235,129 @@ def Run(event):
     btnListInit=Button(win)
     btnListInit.config(text="초기화",command=initMotions)
     btnListInit.pack()
+    #이미지 캡처하기
+    def ImageCapture():
+        global pic
+        global photo
+        pic=None
+        photo=None
+        hcur = ctypes.windll.user32.GetCursor()
+        ctypes.windll.user32.SetSystemCursor(hcur, 32515)
+        cord=[]
+        state_left = win32api.GetKeyState(0x01)
+        def Capture(state_left):
+            global checkImageCaptured
+            global pic
+            global photo
+            checkImageCaptured = 0
+            a = win32api.GetKeyState(0x01)
+            if a != state_left:
+                if a < 0:
+                    x1,y1=win32api.GetCursorPos()
+                    cord.append(x1)
+                    cord.append(y1)
+                    state_left=a
+                    print("x1 :",x1)
+                    print("y1 :",y1)
+                elif a >= 0:
+                    x2,y2=win32api.GetCursorPos()
+                    cord.append(x2)
+                    cord.append(y2)
+                    print("x2 :",x2)
+                    print("y2 :",y2)
+                    checkImageCaptured=1
+                    #pic = pyscreenshot.grab(bbox=(cord[0], cord[1], cord[2], cord[3]))
+                    pic = pyautogui.screenshot(region=(cord[0], cord[1], cord[0]-cord[2], cord[1]-cord[3]))
+                    hcur = ctypes.windll.user32.GetCursor()
+                    ctypes.windll.user32.SetSystemCursor(hcur, 65539)
+
+                    print(str(hcur))
+                    print("pic captured")
+                #     def tmpWindowCreate():
+                #         global photo
+                #         tmpImageCaptureWindow = Tk()
+                        
+                #         print(type(photo))
+
+                #         photo = ImageTk.PhotoImage(pic,master=tmpImageCaptureWindow)
+
+                #         print(type(photo))
+
+                #         labImageDisplay = Label(tmpImageCaptureWindow)
+                #         labImageDisplay.config(text="image")
+                #         #labImageDisplay.image = photo
+                #         labImageDisplay.pack()
+
+                #         def ImageUse():
+                #             tmpImageCaptureWindow.destroy()
+
+                #         btnImageUse = Button(tmpImageCaptureWindow)
+                #         btnImageUse.config(text="사용",command=ImageUse)
+                #         btnImageUse.pack()
+
+                #         def ReCapture():
+                #             tmpImageCaptureWindow.destroy()
+
+                #         btnReCapture = Button(tmpImageCaptureWindow)
+                #         btnReCapture.config(text="다시 캡처하기",command=ReCapture)
+                #         btnReCapture.pack()
+
+                #         tmpImageCaptureWindow.mainloop()
+                # #tmp image 창
+                #     tmpWindowCreate()
+                time.sleep(0.01)
+            if checkImageCaptured==0:
+                win.after(1,Capture,state_left)
+            elif checkImageCaptured==1:
+                tmpImageCaptureWindow = Tk()
+                        
+                print(type(photo))
+
+                photo = ImageTk.PhotoImage(pic,master=tmpImageCaptureWindow)
+
+                print(type(photo))
+
+                labImageDisplay = Label(tmpImageCaptureWindow)
+                labImageDisplay.config(image=photo)
+                #labImageDisplay.image = photo
+                labImageDisplay.pack()
+
+                def ImageUse():
+                    tmpImageCaptureWindow.destroy()
+
+                btnImageUse = Button(tmpImageCaptureWindow)
+                btnImageUse.config(text="사용",command=ImageUse)
+                btnImageUse.pack()
+
+                def ReCapture():
+                    tmpImageCaptureWindow.destroy()
+
+                btnReCapture = Button(tmpImageCaptureWindow)
+                btnReCapture.config(text="다시 캡처하기",command=ReCapture)
+                btnReCapture.pack()
+
+                tmpImageCaptureWindow.mainloop()
+                #tmp image 창
+        Capture(state_left)              
+        #pic.save("ss.png")
+
+            # labImage = Label(win)
+            # labImage.config(image=pic)
+            # labImage.pack()
+            #tmp image 창
+        
+            #tmp image 창
+        # if photo is not None:
+        #     tmpWindowCreate()
+    btnImageCapture = Button(win)
+    btnImageCapture.config(text="캡처하기", command=ImageCapture)
+    btnImageCapture.pack()
+
+
+
+
+
+
 
     win.mainloop()
 
@@ -251,6 +378,9 @@ if __name__ == "__main__":
     p = mp.Process(target=abc,args=(event,))
     p.start()
     Run(event)
+
+    
+
 
 **이미지 선택 캡쳐**
 import time
