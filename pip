@@ -22,3 +22,12 @@ python.exe -m pip install --upgrade pip
 Python Image Library (PIL) 설치하기 위해 > pip3 install image 
 
 pip install pyscreenshot 이것도 함
+
+pip install pyautogui
+
+pip install pynput
+
+pip install tkinter 가 자꾸 Could not find a version that satisfies the requirement tkinter (from versions:) No matching distribution found for tkinter
+위와 같은 에러가 발생해서 찾아보니 pip install Tk interface 해서 설치함
+
+tkinterDnD >> pip3 install python-tkdnd
