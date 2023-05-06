@@ -239,6 +239,7 @@ def Run(event):
     def ImageCapture():
         global pic
         global photo
+        global state_left
         pic=None
         photo=None
         hcur = ctypes.windll.user32.GetCursor()
@@ -266,98 +267,45 @@ def Run(event):
                     print("x2 :",x2)
                     print("y2 :",y2)
                     checkImageCaptured=1
-                    #pic = pyscreenshot.grab(bbox=(cord[0], cord[1], cord[2], cord[3]))
-                    pic = pyautogui.screenshot(region=(cord[0], cord[1], cord[0]-cord[2], cord[1]-cord[3]))
+                    pic = pyautogui.screenshot(region=(cord[0], cord[1], cord[2]-cord[0], cord[3]-cord[1]))
                     hcur = ctypes.windll.user32.GetCursor()
                     ctypes.windll.user32.SetSystemCursor(hcur, 65539)
-
-                    print(str(hcur))
-                    print("pic captured")
-                #     def tmpWindowCreate():
-                #         global photo
-                #         tmpImageCaptureWindow = Tk()
-                        
-                #         print(type(photo))
-
-                #         photo = ImageTk.PhotoImage(pic,master=tmpImageCaptureWindow)
-
-                #         print(type(photo))
-
-                #         labImageDisplay = Label(tmpImageCaptureWindow)
-                #         labImageDisplay.config(text="image")
-                #         #labImageDisplay.image = photo
-                #         labImageDisplay.pack()
-
-                #         def ImageUse():
-                #             tmpImageCaptureWindow.destroy()
-
-                #         btnImageUse = Button(tmpImageCaptureWindow)
-                #         btnImageUse.config(text="사용",command=ImageUse)
-                #         btnImageUse.pack()
-
-                #         def ReCapture():
-                #             tmpImageCaptureWindow.destroy()
-
-                #         btnReCapture = Button(tmpImageCaptureWindow)
-                #         btnReCapture.config(text="다시 캡처하기",command=ReCapture)
-                #         btnReCapture.pack()
-
-                #         tmpImageCaptureWindow.mainloop()
-                # #tmp image 창
-                #     tmpWindowCreate()
                 time.sleep(0.01)
             if checkImageCaptured==0:
                 win.after(1,Capture,state_left)
             elif checkImageCaptured==1:
                 tmpImageCaptureWindow = Tk()
-                        
-                print(type(photo))
-
                 photo = ImageTk.PhotoImage(pic,master=tmpImageCaptureWindow)
-
-                print(type(photo))
-
                 labImageDisplay = Label(tmpImageCaptureWindow)
                 labImageDisplay.config(image=photo)
-                #labImageDisplay.image = photo
                 labImageDisplay.pack()
 
-                def ImageUse():
+                def ImageUse(pic):
+                    photoC=ImageTk.PhotoImage(pic,master=win)
+                    labCapturedImage = Label(win)
+                    labCapturedImage.config(image=photoC)
+                    labCapturedImage.pack()
                     tmpImageCaptureWindow.destroy()
 
                 btnImageUse = Button(tmpImageCaptureWindow)
-                btnImageUse.config(text="사용",command=ImageUse)
+                btnImageUse.config(text="사용",command=lambda:ImageUse(pic))
                 btnImageUse.pack()
 
                 def ReCapture():
+                    global state_left
                     tmpImageCaptureWindow.destroy()
+                    ImageCapture()
 
                 btnReCapture = Button(tmpImageCaptureWindow)
                 btnReCapture.config(text="다시 캡처하기",command=ReCapture)
                 btnReCapture.pack()
 
                 tmpImageCaptureWindow.mainloop()
-                #tmp image 창
         Capture(state_left)              
-        #pic.save("ss.png")
 
-            # labImage = Label(win)
-            # labImage.config(image=pic)
-            # labImage.pack()
-            #tmp image 창
-        
-            #tmp image 창
-        # if photo is not None:
-        #     tmpWindowCreate()
     btnImageCapture = Button(win)
     btnImageCapture.config(text="캡처하기", command=ImageCapture)
     btnImageCapture.pack()
-
-
-
-
-
-
 
     win.mainloop()
 
@@ -379,7 +327,6 @@ if __name__ == "__main__":
     p.start()
     Run(event)
 
-    
 
 
 **이미지 선택 캡쳐**
@@ -418,3 +365,7 @@ pyautogui.moveTo(start)
 #win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,)
 
 할 일 : 커서 바꾸기
+
+
+#label 이미지 안뜸
+https://stackoverflow.com/questions/13148975/tkinter-label-does-not-show-image
