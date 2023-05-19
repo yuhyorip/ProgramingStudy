@@ -29,306 +29,6 @@ MOVE Result :(348, 347)
 (350,350)으로 안가고 오차가 있음 **
 
 
-import ctypes
-from tkinter import*
-import pyautogui
-import win32api
-import win32con
-import time
-import tkinter.messagebox
-import multiprocessing as mp
-from pynput.keyboard import Key,Listener
-from tkinter import ttk
-import tkinterDnD
-import pyscreenshot
-from PIL import Image,ImageTk
-
-def Run(event):
-
-    win=Tk()
-    win.title("매크로 제작")
-    win.geometry("300x300")
-    win.option_add("Font","바탕 20")
-
-
-    #동작 리스트
-    global motions
-    motions=[]
-    
-    #입력창 비우기 함수
-    def clearEntryIterNum(event):
-        if entIterNum.get()=="반복 횟수":
-            entIterNum.delete(0,len(entIterNum.get()))
-    def clearEntryDelay(event):
-        if entDelay.get()=="-초":
-            entDelay.delete(0,len(entDelay.get()))
-
-    #동작 감지 함수
-    def MotionCapture():
-        time.sleep(0.3)
-        state_left = win32api.GetKeyState(0x01)
-        state_right = win32api.GetKeyState(0x02)
-        def MC(l,r):
-            check=0
-            a = win32api.GetKeyState(0x01)
-            b = win32api.GetKeyState(0x02)
-            if a != l:
-                if a < 0:
-                    x,y=win32api.GetCursorPos()
-                    motions.append((x,y,"LP"))
-                    tmp=labMotionList.cget("text")
-                    textUpdate=tmp+"\n("+str(x)+","+str(y)+") Left Pressed"
-                    labMotionList.config(text=textUpdate)
-
-                else:
-                    x,y=win32api.GetCursorPos()
-                    motions.append((x,y,"LR"))
-                    tmp=labMotionList.cget("text")
-                    textUpdate=tmp+"\n("+str(x)+","+str(y)+") Left Released"
-                    labMotionList.config(text=textUpdate)
-                    check=1
-            if b != r:
-                if b < 0:
-                    x,y=win32api.GetCursorPos()
-                    motions.append((x,y,"RP"))
-                    tmp=labMotionList.cget("text")
-                    textUpdate=tmp+"\n("+str(x)+","+str(y)+") Right Pressed"
-                    labMotionList.config(text=textUpdate)
-
-                else:
-                    x,y=win32api.GetCursorPos()
-                    motions.append((x,y,"RR"))
-                    tmp=labMotionList.cget("text")
-                    textUpdate=tmp+"\n("+str(x)+","+str(y)+") Right Released"
-                    labMotionList.config(text=textUpdate)
-                    check=1
-            else:
-                if a<0:
-                    x,y=win32api.GetCursorPos()
-                    motions.append((x,y,"M"))
-
-            if check==0:
-                win.after(11,MC,a,b)
-        MC(state_left,state_right)
-
-    #동작 감지 버튼
-    btnMotionCapture=Button(win)
-    btnMotionCapture.config(text="동작 감지")
-    btnMotionCapture.config(command=MotionCapture)
-    btnMotionCapture.pack()
-
-    #동작 리스트 출력
-    labMotionList=Label(win)
-    labMotionList.config(text='')
-    labMotionList.pack()
-
-    #딜레이 추가 함수
-    def DelayAdd():
-        try:
-            if float(entDelay.get())>0:
-                motions.append((float(entDelay.get()),0,"D"))
-                tmp=labMotionList.cget("text")
-                textUpdate=tmp+"\n"+entDelay.get()+"초 대기"
-                labMotionList.config(text=textUpdate)
-        except ValueError:
-            tkinter.messagebox.showwarning(title="오류",message="딜레이 입력값이 올바르지 않습니다")
-        entDelay.delete(0,len(entDelay.get()))
-        entDelay.insert(0,"-초") 
-
-    #딜레이 시간 입력
-    entDelay=Entry(win)
-    entDelay.insert(0,"-초")
-    entDelay.bind("<Button-1>",clearEntryDelay)
-    entDelay.pack()
-    
-
-    #딜레이 추가 버튼
-    btnDelayAdd=Button(win)
-    btnDelayAdd.config(text="딜레이 추가")
-    btnDelayAdd.config(command=DelayAdd)
-    btnDelayAdd.pack()
-
-    #매크로 반복 횟수
-    entIterNum=Entry(win)
-    entIterNum.insert(0,"반복 횟수")
-    entIterNum.bind("<Button-1>",clearEntryIterNum)
-    entIterNum.pack()
-
-    global Max
-    global done
-    Max=0
-    done=0
-
-    #매크로 실행 횟수 
-    labMacroRunTime=Label(win)
-    labMacroRunTime.config(text="--/--")
-    labMacroRunTime.pack()
-
-    #매크로 실행 함수
-    def MacroRun():
-        try:    
-            Max=entIterNum.get()
-            IterNum=int(entIterNum.get())
-            labMacroRunTime.config(text="0/"+Max)
-            labMacroRunTime.update_idletasks()
-            time.sleep(0.3)
-            entIterNum.delete(0,len(entIterNum.get()))
-            entIterNum.insert(0,"반복 횟수")
-            for i in range(IterNum):
-                if not event.is_set():
-                    for j in range(0,len(motions)):
-                        if motions[j][2]=="LP":
-                            win32api.SetCursorPos((motions[j][0],motions[j][1]))
-                            time.sleep(0.01)
-                            win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,motions[j][0],motions[j][1],0,0)
-                            
-                        elif motions[j][2]=="LR":
-                            win32api.SetCursorPos((motions[j][0],motions[j][1]))
-                            time.sleep(0.01)
-                            win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,motions[j][0]-motions[j-1][0],motions[j][1]-motions[j-1][1],0,0)
-                            
-                        elif motions[j][2]=="RP":
-                            win32api.SetCursorPos((motions[j][0],motions[j][1]))
-                            time.sleep(0.01)
-                            win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,motions[j][0]-motions[j-1][0],motions[j][1]-motions[j-1][1],0,0)
-                            
-                        elif motions[j][2]=="RR":
-                            win32api.SetCursorPos((motions[j][0],motions[j][1]))
-                            time.sleep(0.01)
-                            win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,motions[j][0]-motions[j-1][0],motions[j][1]-motions[j-1][1],0,0)
-                            
-                        elif motions[j][2]=="M":
-                            win32api.SetCursorPos((motions[j][0],motions[j][1]))
-                            time.sleep(0.001)
-
-                        elif motions[j][2]=="D":
-                            time.sleep(motions[j][0])
-                    labMacroRunTime.config(text=str(i+1)+"/"+Max)
-                    labMacroRunTime.update_idletasks()
-                else:
-                    labMacroRunTime.config(text="--/--")
-                    labMacroRunTime.update_idletasks()
-                    event.clear()
-                    break   
-                
-        except ValueError:
-            tkinter.messagebox.showwarning(title="오류",message="반복 횟수 입력값이 올바르지 않습니다")
-
-
-    #매크로 실행 버튼
-    btnMacroRun=Button(win)
-    btnMacroRun.config(text="실행")
-    btnMacroRun.config(command=MacroRun)
-    btnMacroRun.pack()
-
-    #동작 리스트 초기화 버튼
-    def initMotions():
-        global motions
-        motions=[]
-        labMotionList.config(text='')
-        labMacroRunTime.config(text='--/--')
-        entIterNum.delete(0,len(entIterNum.get()))
-        entIterNum.insert(0,"반복 횟수")
-        entDelay.delete(0,len(entDelay.get()))
-        entDelay.insert(0,"-초")
-
-    btnListInit=Button(win)
-    btnListInit.config(text="초기화",command=initMotions)
-    btnListInit.pack()
-    #이미지 캡처하기
-    def ImageCapture():
-        global pic
-        global photo
-        global state_left
-        pic=None
-        photo=None
-        hcur = ctypes.windll.user32.GetCursor()
-        ctypes.windll.user32.SetSystemCursor(hcur, 32515)
-        cord=[]
-        state_left = win32api.GetKeyState(0x01)
-        def Capture(state_left):
-            global checkImageCaptured
-            global pic
-            global photo
-            checkImageCaptured = 0
-            a = win32api.GetKeyState(0x01)
-            if a != state_left:
-                if a < 0:
-                    x1,y1=win32api.GetCursorPos()
-                    cord.append(x1)
-                    cord.append(y1)
-                    state_left=a
-                    print("x1 :",x1)
-                    print("y1 :",y1)
-                elif a >= 0:
-                    x2,y2=win32api.GetCursorPos()
-                    cord.append(x2)
-                    cord.append(y2)
-                    print("x2 :",x2)
-                    print("y2 :",y2)
-                    checkImageCaptured=1
-                    pic = pyautogui.screenshot(region=(cord[0], cord[1], cord[2]-cord[0], cord[3]-cord[1]))
-                    hcur = ctypes.windll.user32.GetCursor()
-                    ctypes.windll.user32.SetSystemCursor(hcur, 65539)
-                time.sleep(0.01)
-            if checkImageCaptured==0:
-                win.after(1,Capture,state_left)
-            elif checkImageCaptured==1:
-                tmpImageCaptureWindow = Tk()
-                photo = ImageTk.PhotoImage(pic,master=tmpImageCaptureWindow)
-                labImageDisplay = Label(tmpImageCaptureWindow)
-                labImageDisplay.config(image=photo)
-                labImageDisplay.pack()
-
-                def ImageUse(pic):
-                    photoC=ImageTk.PhotoImage(pic,master=win)
-                    labCapturedImage = Label(win)
-                    labCapturedImage.config(image=photoC)
-                    labCapturedImage.pack()
-                    tmpImageCaptureWindow.destroy()
-
-                btnImageUse = Button(tmpImageCaptureWindow)
-                btnImageUse.config(text="사용",command=lambda:ImageUse(pic))
-                btnImageUse.pack()
-
-                def ReCapture():
-                    global state_left
-                    tmpImageCaptureWindow.destroy()
-                    ImageCapture()
-
-                btnReCapture = Button(tmpImageCaptureWindow)
-                btnReCapture.config(text="다시 캡처하기",command=ReCapture)
-                btnReCapture.pack()
-
-                tmpImageCaptureWindow.mainloop()
-        Capture(state_left)              
-
-    btnImageCapture = Button(win)
-    btnImageCapture.config(text="캡처하기", command=ImageCapture)
-    btnImageCapture.pack()
-
-    win.mainloop()
-
-def abc(event):   
-    
-    def on_press(key):
-        if str(key)=="'p'":
-            event.set()
-    
-    def on_release(key):
-        pass
-    
-    with Listener(on_press=on_press, on_release=on_release) as listener:
-            listener.join()
-
-if __name__ == "__main__":
-    event=mp.Event()
-    p = mp.Process(target=abc,args=(event,))
-    p.start()
-    Run(event)
-
-
-
 **이미지 선택 캡쳐**
 import time
 import pyscreenshot
@@ -370,8 +70,10 @@ pyautogui.moveTo(start)
 #label 이미지 안뜸
 https://stackoverflow.com/questions/13148975/tkinter-label-does-not-show-image
 
+import base64
 import ctypes
 from tkinter import*
+import zlib
 import pyautogui
 import win32api
 import win32con
@@ -383,14 +85,20 @@ from tkinter import ttk
 import tkinterDnD
 import pyscreenshot
 from PIL import Image,ImageTk
+#from fontTools.ttLib import TTFont
+#font = TTFont('/path/to/font.ttf')
 
 def Run(event):
 
+    #title bar icon 제거
+    # icon=zlib.decompress(base64.b64decode('eJxjYGAEQgEBBiDJwZDBy''sAgxsDAoAHEQCEGBQaIOAg4sDIgACMUj4JRMApGwQgF/ykEAFXxQRc='))
+    # transparentIcon=ImageTk.PhotoImage(data=icon)
+
     win=Tk()
     win.title("매크로 제작")
-    win.geometry("300x300")
+    win.geometry("700x400")
+    win.tk.call('wm', 'iconphoto', win._w, tkinter.PhotoImage(file='logo.png'))
     win.option_add("Font","바탕 20")
-
 
     #동작 리스트
     global motions
@@ -451,6 +159,11 @@ def Run(event):
             if check==0:
                 win.after(11,MC,a,b)
         MC(state_left,state_right)
+
+    #Logo Label
+    logoLabel=Label(win)
+    logoLabel.config(text="AUTO MOTION",font=('Arial',20))
+    logoLabel.pack(side="left")    
 
     #동작 감지 버튼
     btnMotionCapture=Button(win)
@@ -544,6 +257,15 @@ def Run(event):
 
                         elif motions[j][2]=="D":
                             time.sleep(motions[j][0])
+                        
+                        elif motions[j][2]=="IC":
+                            imageLocation = pyautogui.locateCenterOnScreen(imageDict[motions[j][0]])
+                            pyautogui.moveTo(imageLocation)
+                            win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,motions[j][0],motions[j][1],0,0)
+                            time.sleep(0.001)
+                            win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,motions[j][0]-motions[j-1][0],motions[j][1]-motions[j-1][1],0,0)
+                            time.sleep(0.001)
+
                     labMacroRunTime.config(text=str(i+1)+"/"+Max)
                     labMacroRunTime.update_idletasks()
                 else:
@@ -577,20 +299,25 @@ def Run(event):
     btnListInit.config(text="초기화",command=initMotions)
     btnListInit.pack()
     #이미지 캡처하기
+    imageLabelDict={}
+    imageDict={}
+    imageCount=[0]
+
+    ##이미지 클릭했을때 motions와 기록창에 갱신
+    # def imageLabelBind(lab):
+        
+    #     pass
+
+
     def ImageCapture():
-        global pic
-        global photo
-        global state_left
         pic=None
         photo=None
         hcur = ctypes.windll.user32.GetCursor()
         ctypes.windll.user32.SetSystemCursor(hcur, 32515)
         cord=[]
+        photoindicateList=[]
         state_left = win32api.GetKeyState(0x01)
         def Capture(state_left):
-            global checkImageCaptured
-            global pic
-            global photo
             checkImageCaptured = 0
             a = win32api.GetKeyState(0x01)
             if a != state_left:
@@ -617,16 +344,34 @@ def Run(event):
             elif checkImageCaptured==1:
                 tmpImageCaptureWindow = Tk()
                 photo = ImageTk.PhotoImage(pic,master=tmpImageCaptureWindow)
+                photoindicateList.append(photo)
                 labImageDisplay = Label(tmpImageCaptureWindow)
                 labImageDisplay.config(image=photo)
                 labImageDisplay.pack()
 
                 def ImageUse(pic):
-                    photoC=ImageTk.PhotoImage(pic,master=win)
+                    #pic --> ImageTk.photoimage 로 변환
+                    photoC=ImageTk.PhotoImage(pic.resize((40,40)),master=win)
+                    #photoC indication 저장
+                    photoindicateList.append(photoC)
+
+                    #label 생성
+                    labCapturedImage=str(imageCount[0])
                     labCapturedImage = Label(win)
                     labCapturedImage.config(image=photoC)
                     labCapturedImage.pack()
+
+                    #Label indication
+                    imageLabelDict[imageCount[0]]=labCapturedImage
+                    #pic indication
+                    imageDict[imageCount[0]]=pic
+                    #motions에 추가
+                    motions.append((imageCount[0],0,"IC"))
+
+                    imageCount[0]=imageCount[0]+1
                     tmpImageCaptureWindow.destroy()
+
+                    
 
                 btnImageUse = Button(tmpImageCaptureWindow)
                 btnImageUse.config(text="사용",command=lambda:ImageUse(pic))
@@ -667,4 +412,48 @@ if __name__ == "__main__":
     p = mp.Process(target=abc,args=(event,))
     p.start()
     Run(event)
+    
+##grid 배치 test
+import tkinter as tk
+
+window = tk.Tk()
+window.title("My Program")
+window.geometry("700x400")
+
+# logo = tk.Label(window, text="Logo")
+# logo.grid(row=0, column=0, columnspan=3, sticky="nw", padx=10, pady=10)
+
+window.columnconfigure(0, weight=1, uniform=1)
+window.columnconfigure(1, weight=1, uniform=1)
+window.columnconfigure(2, weight=1, uniform=1)
+
+window.rowconfigure(1, weight=1)
+window.rowconfigure(2, weight=1)
+window.rowconfigure(3, weight=1)
+
+button1 = tk.Button(window, text="Button 1")
+button1.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
+
+button2 = tk.Button(window, text="Button 2")
+button2.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
+
+button3 = tk.Button(window, text="Button 3")
+button3.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
+
+big_label = tk.Label(window, text="Big Label")
+big_label.grid(row=1, column=1, rowspan=3, sticky="nsew", padx=10, pady=10)
+
+button4 = tk.Button(window, text="Button 4")
+button4.grid(row=1, column=2, sticky="nsew", padx=10, pady=10)
+
+button5 = tk.Button(window, text="Button 5")
+button5.grid(row=2, column=2, sticky="nsew", padx=10, pady=10)
+
+entry = tk.Entry(window)
+entry.grid(row=3, column=2, sticky="nsew", padx=10, pady=10)
+
+window.mainloop()
+
+#logo
+
 
