@@ -73,6 +73,7 @@ https://stackoverflow.com/questions/13148975/tkinter-label-does-not-show-image
 import base64
 import ctypes
 from tkinter import*
+from tkinter import filedialog
 import zlib
 import pyautogui
 import win32api
@@ -84,9 +85,8 @@ from pynput.keyboard import Key,Listener
 from tkinter import ttk
 import tkinterDnD
 import pyscreenshot
-from PIL import Image,ImageTk
-#from fontTools.ttLib import TTFont
-#font = TTFont('/path/to/font.ttf')
+from PIL import Image
+from PIL import ImageTk as itk
 
 def Run(event):
 
@@ -96,9 +96,60 @@ def Run(event):
 
     win=Tk()
     win.title("매크로 제작")
-    win.geometry("700x400")
+    win.geometry("700x400+350+200")
     win.tk.call('wm', 'iconphoto', win._w, tkinter.PhotoImage(file='logo.png'))
-    win.option_add("Font","바탕 20")
+    #win.option_add("Font","바탕 20") 
+    #win['background']='#ff8247'
+    win.overrideredirect(True)
+
+    windowbg=PhotoImage(file="background.png")
+    labelBackground=Label(win, image=windowbg,bd=0,borderwidth=0)
+    labelBackground.place(x=0,y=0)
+
+    titleBarImage=PhotoImage(file="titlebarImage.png")
+    titleBar=Frame(win,width=700,height=55)
+    titleBar.place(x=0,y=0)
+
+    global x1
+    global y1
+    x1=0
+    y1=0
+    global winX
+    global winY
+    winX=350
+    winY=200
+
+    def beforeDrag(event):
+        global x1
+        global y1
+        x1,y1=win32api.GetCursorPos()
+
+    def dragWindow(event):
+        global x1
+        global y1
+        global winX
+        global winY
+
+        win.geometry(f'+{event.x_root-x1+winX}+{event.y_root-y1+winY}')
+        winX=winX+event.x_root-x1
+        winY=winY+event.y_root-y1
+        x1=event.x_root
+        y1=event.y_root
+
+    titleBarBg=Label(titleBar,image=titleBarImage,relief="flat",bd=0)
+    titleBarBg.bind("<Button-1>",beforeDrag)
+    titleBarBg.bind("<B1-Motion>",dragWindow)
+    titleBarBg.place(x=0,y=0)
+
+    exitButton=Label(titleBar,text="×",bd=0,bg="gray19",font=('*Font',20),fg="snow",relief="flat")
+    exitButton.bind("<Button-1>", lambda e: win.destroy())
+    exitButton.place(x=665,y=9)
+
+    # win.overrideredirect(True) 이걸 함으로써 iconic화 하면 taskbar에 아이콘이 뜨지만 window를 키면 사라지는 문제 발생
+    # 혹시 taskbar에 임의로 하나의 icon을 추가할 수 있고, 그 icon을 win과 연결할 수 있으면 해결할 수 있지 않을까?
+    # iconicButton=Label(titleBar,text="-",bd=0,bg="gray19",font=('*Font',20),fg="snow",relief="flat")
+    # iconicButton.bind("<Button-1>", lambda e: win.iconify())
+    # iconicButton.place(x=640,y=9)
 
     #동작 리스트
     global motions
@@ -109,8 +160,17 @@ def Run(event):
         if entIterNum.get()=="반복 횟수":
             entIterNum.delete(0,len(entIterNum.get()))
     def clearEntryDelay(event):
-        if entDelay.get()=="-초":
+        if entDelay.get()=="-(초)":
             entDelay.delete(0,len(entDelay.get()))
+            entDelay.config(fg="snow")
+
+    #EmptyEntry
+    def emptyEntry(event):
+        if len(entDelay.get())==1 or len(entDelay.get())==0:
+            entDelay.delete(0,len(entDelay.get()))
+            entDelay.insert(0,"-(초)")
+            entDelay.config(fg="gray40")
+            entDelay.icursor(0)
 
     #동작 감지 함수
     def MotionCapture():
@@ -126,14 +186,14 @@ def Run(event):
                     x,y=win32api.GetCursorPos()
                     motions.append((x,y,"LP"))
                     tmp=labMotionList.cget("text")
-                    textUpdate=tmp+"\n("+str(x)+","+str(y)+") Left Pressed"
+                    textUpdate=tmp+"("+str(x)+","+str(y)+") Left Pressed\n"
                     labMotionList.config(text=textUpdate)
 
                 else:
                     x,y=win32api.GetCursorPos()
                     motions.append((x,y,"LR"))
                     tmp=labMotionList.cget("text")
-                    textUpdate=tmp+"\n("+str(x)+","+str(y)+") Left Released"
+                    textUpdate=tmp+"("+str(x)+","+str(y)+") Left Released\n"
                     labMotionList.config(text=textUpdate)
                     check=1
             if b != r:
@@ -141,14 +201,14 @@ def Run(event):
                     x,y=win32api.GetCursorPos()
                     motions.append((x,y,"RP"))
                     tmp=labMotionList.cget("text")
-                    textUpdate=tmp+"\n("+str(x)+","+str(y)+") Right Pressed"
+                    textUpdate=tmp+"("+str(x)+","+str(y)+") Right Pressed\n"
                     labMotionList.config(text=textUpdate)
 
                 else:
                     x,y=win32api.GetCursorPos()
                     motions.append((x,y,"RR"))
                     tmp=labMotionList.cget("text")
-                    textUpdate=tmp+"\n("+str(x)+","+str(y)+") Right Released"
+                    textUpdate=tmp+"("+str(x)+","+str(y)+") Right Released\n"
                     labMotionList.config(text=textUpdate)
                     check=1
             else:
@@ -160,21 +220,42 @@ def Run(event):
                 win.after(11,MC,a,b)
         MC(state_left,state_right)
 
-    #Logo Label
-    logoLabel=Label(win)
-    logoLabel.config(text="AUTO MOTION",font=('Arial',20))
-    logoLabel.pack(side="left")    
+    #Left Frame
+    frame1=tkinter.Frame(win,width=213,height=327,relief="raised", bd=0,bg='gray12')
+    frame1.place(x=15,y=65)
+    frame1.pack_propagate(False)
+
+    # frame1Canvas=tkinter.Canvas(frame1,width=213,height=327)
+    # frame1Canvas.pack()
+
+    # tmp1BgImage=Image.open('frame1bg.jpg')
+    # frame1BgImage=itk.PhotoImage(tmp1BgImage.resize((213,327)))
+    # frame1Canvas.create_image(0,0,image=frame1BgImage)
+
+    frame2=tkinter.Frame(win,width=213,height=327,relief="raised", bd=0,bg="gray12")
+    frame2.place(x=245,y=65)
+    frame2.pack_propagate(False)
+
+    frame3=tkinter.Frame(win,width=213,height=327,relief="raised", bd=0,bg="gray12")
+    frame3.place(x=473,y=65)
+    frame3.pack_propagate(False)      
 
     #동작 감지 버튼
-    btnMotionCapture=Button(win)
-    btnMotionCapture.config(text="동작 감지")
+    btnMotionCapture=Button(frame1,width=12, font=('Arial',15),bd=0,bg="gray12",fg="gray40")
+    btnMotionCapture.config(text="클릭 / 드래그")
     btnMotionCapture.config(command=MotionCapture)
-    btnMotionCapture.pack()
+    btnMotionCapture.bind("<Enter>",lambda e: btnMotionCapture.config(fg="snow"))
+    btnMotionCapture.bind("<Leave>",lambda e: btnMotionCapture.config(fg="gray40"))
+    btnMotionCapture.pack(pady=(10,5))
 
     #동작 리스트 출력
-    labMotionList=Label(win)
+    border_color = Frame(frame2, background="gray40")
+    
+    labMotionList=Label(border_color,font=('Arial',12),bg="gray15",fg="snow",anchor="nw")
     labMotionList.config(text='')
-    labMotionList.pack()
+    labMotionList.pack(expand='true',fill='both',padx=5,pady=5)
+
+    border_color.pack(expand='true',fill='both')
 
     #딜레이 추가 함수
     def DelayAdd():
@@ -189,21 +270,29 @@ def Run(event):
         entDelay.delete(0,len(entDelay.get()))
         entDelay.insert(0,"-초") 
 
-    #딜레이 시간 입력
-    entDelay=Entry(win)
-    entDelay.insert(0,"-초")
-    entDelay.bind("<Button-1>",clearEntryDelay)
-    entDelay.pack()
-    
+    #딜레이 frame
+    frame11=tkinter.Frame(frame1,width=185,height=45,bg="gray12")
+    frame11.pack_propagate(False)
+    frame11.pack(padx=10,pady=(0,5))
 
+    #딜레이 시간 입력
+    entDelay=Entry(frame11,width=6,font=('Arial',15),bd=0,bg="gray24",fg="gray40")
+    entDelay.insert(0,"-(초)")
+    entDelay.bind("<Button-1>",clearEntryDelay)
+    entDelay.bind("<BackSpace>",emptyEntry)
+    entDelay.bind("<KeyPress>",clearEntryDelay)
+    entDelay.pack(side="left",expand=True, fill='both',padx=(0,5))
+    
     #딜레이 추가 버튼
-    btnDelayAdd=Button(win)
+    btnDelayAdd=Button(frame11,font=('Arial',15),bd=0,bg="gray12",fg="gray40")
     btnDelayAdd.config(text="딜레이 추가")
     btnDelayAdd.config(command=DelayAdd)
-    btnDelayAdd.pack()
+    btnDelayAdd.bind("<Enter>",lambda e: btnDelayAdd.config(fg="snow"))
+    btnDelayAdd.bind("<Leave>",lambda e: btnDelayAdd.config(fg="gray40"))
+    btnDelayAdd.pack(side="right",expand=True, fill='both')
 
     #매크로 반복 횟수
-    entIterNum=Entry(win)
+    entIterNum=Entry(frame3)
     entIterNum.insert(0,"반복 횟수")
     entIterNum.bind("<Button-1>",clearEntryIterNum)
     entIterNum.pack()
@@ -214,7 +303,7 @@ def Run(event):
     done=0
 
     #매크로 실행 횟수 
-    labMacroRunTime=Label(win)
+    labMacroRunTime=Label(frame3)
     labMacroRunTime.config(text="--/--")
     labMacroRunTime.pack()
 
@@ -279,7 +368,7 @@ def Run(event):
 
 
     #매크로 실행 버튼
-    btnMacroRun=Button(win)
+    btnMacroRun=Button(frame3)
     btnMacroRun.config(text="실행")
     btnMacroRun.config(command=MacroRun)
     btnMacroRun.pack()
@@ -293,11 +382,29 @@ def Run(event):
         entIterNum.delete(0,len(entIterNum.get()))
         entIterNum.insert(0,"반복 횟수")
         entDelay.delete(0,len(entDelay.get()))
-        entDelay.insert(0,"-초")
+        entDelay.insert(0,"-(초)")
+        imageLabelDict={}
+        imageDict={}
+        imageCount[0]=0
+        for widget in frame1221.winfo_children():
+            widget.destroy()
 
-    btnListInit=Button(win)
+    btnListInit=Button(frame3)
     btnListInit.config(text="초기화",command=initMotions)
     btnListInit.pack()
+    
+    #image Frame
+    frame12=tkinter.Frame(frame1,width=185,height=203,bg="gray12",bd=0)
+    frame12.pack_propagate(False)
+    frame12.pack(pady=(5,0))
+
+    imageTextLabel=Label(frame12,text="이미지",font=('Arial',10),bd=0,bg="gray12",fg="snow")
+    imageTextLabel.pack(anchor='nw')
+
+    frame121=tkinter.Frame(frame12,width=185,height=26,bg="gray12",bd=0)
+    frame121.pack_propagate(False)
+    frame121.pack()
+
     #이미지 캡처하기
     imageLabelDict={}
     imageDict={}
@@ -307,7 +414,6 @@ def Run(event):
     # def imageLabelBind(lab):
         
     #     pass
-
 
     def ImageCapture():
         pic=None
@@ -343,7 +449,7 @@ def Run(event):
                 win.after(1,Capture,state_left)
             elif checkImageCaptured==1:
                 tmpImageCaptureWindow = Tk()
-                photo = ImageTk.PhotoImage(pic,master=tmpImageCaptureWindow)
+                photo = itk.PhotoImage(pic,master=tmpImageCaptureWindow)
                 photoindicateList.append(photo)
                 labImageDisplay = Label(tmpImageCaptureWindow)
                 labImageDisplay.config(image=photo)
@@ -351,15 +457,21 @@ def Run(event):
 
                 def ImageUse(pic):
                     #pic --> ImageTk.photoimage 로 변환
-                    photoC=ImageTk.PhotoImage(pic.resize((40,40)),master=win)
+                    imageSize=50
+                    photoC=itk.PhotoImage(pic.resize((imageSize,imageSize)),master=win)
                     #photoC indication 저장
                     photoindicateList.append(photoC)
 
                     #label 생성
                     labCapturedImage=str(imageCount[0])
-                    labCapturedImage = Label(win)
+                    labCapturedImage = Label(frame1221)
                     labCapturedImage.config(image=photoC)
-                    labCapturedImage.pack()
+
+                    if imageCount[0]%3==0:
+                        labCapturedImage.place(x=0,y=(imageSize+10)*(imageCount[0]//3))
+                    else:
+                        labCapturedImage.place(x=(imageSize+6)*(imageCount[0]%3),y=(imageSize+10)*(imageCount[0]//3))
+                        
 
                     #Label indication
                     imageLabelDict[imageCount[0]]=labCapturedImage
@@ -370,8 +482,6 @@ def Run(event):
 
                     imageCount[0]=imageCount[0]+1
                     tmpImageCaptureWindow.destroy()
-
-                    
 
                 btnImageUse = Button(tmpImageCaptureWindow)
                 btnImageUse.config(text="사용",command=lambda:ImageUse(pic))
@@ -389,24 +499,75 @@ def Run(event):
                 tmpImageCaptureWindow.mainloop()
         Capture(state_left)              
 
-    btnImageCapture = Button(win)
+    btnImageCapture = Button(frame121,font=('Arial',15),bd=0,bg="gray12",fg="gray40")
     btnImageCapture.config(text="캡처하기", command=ImageCapture)
-    btnImageCapture.pack()
+    btnImageCapture.bind("<Enter>",lambda e: btnImageCapture.config(fg="snow"))
+    btnImageCapture.bind("<Leave>",lambda e: btnImageCapture.config(fg="gray40"))
+    btnImageCapture.pack(side="left",expand=True,fill="both",padx=(5,5))
+
+    #Image upload
+    def browseImage():
+        photoindicateList=[]
+        filename = filedialog.askopenfilename(initialdir = "/",
+                                          title = "Select a File",
+                                          filetypes = (("JPG/PNG 이미지",
+                                                        "*.jpg;*,*.png;*"),
+                                                       ("all files",
+                                                        "*.*")))
+        tmpBrowsedImage=Image.open(filename)
+        browsedImage=itk.PhotoImage(tmpBrowsedImage.resize((50,50)))
+        photoindicateList.append(browsedImage)
+        # Change label contents
+        labCapturedImage=str(imageCount[0])
+        labCapturedImage = Label(frame1221)
+        labCapturedImage.config(image=browsedImage)
+        if imageCount[0]%3==0:
+            labCapturedImage.place(x=0,y=60*(imageCount[0]//3))
+        else:
+            labCapturedImage.place(x=56*(imageCount[0]%3),y=60*(imageCount[0]//3))
+        #Label indication
+        imageLabelDict[imageCount[0]]=labCapturedImage
+        #pic indication
+        imageDict[imageCount[0]]=browsedImage
+        #motions에 추가
+        motions.append((imageCount[0],0,"IC"))
+        #image count 증가
+        imageCount[0]=imageCount[0]+1
+
+    btnImageOpen = Button(frame121,font=('Arial',15),bd=0,bg="gray12",fg="gray40")
+    btnImageOpen.config(text="불러오기", command=browseImage)
+    btnImageOpen.bind("<Enter>",lambda e: btnImageOpen.config(fg="snow"))
+    btnImageOpen.bind("<Leave>",lambda e: btnImageOpen.config(fg="gray40"))
+    btnImageOpen.pack(side="left",expand=True,fill="both")
+
+    #image canvas
+    #canvasHeight=imageCount[0]*40+172  #185 / 172
+    frame122 = tkinter.Frame(frame12,width=185,height=172,bd=0)
+    frame122.pack_propagate(False)
+    frame122.pack(pady=(5,0))
+
+    imageCanvas = tkinter.Canvas(frame122,scrollregion=(0,0,185,440),bd=0)
+    imageCanvas.pack(expand=True,fill='both')
+    
+    imageScrollbar=ttk.Scrollbar(frame122,orient='vertical',command=imageCanvas.yview)
+    imageCanvas.configure(yscrollcommand=imageScrollbar.set)
+    
+    imageScrollbar.place(relx=1,rely=0,relheight=1,anchor='ne')
+
+    frame1221=tkinter.Frame(imageCanvas,width=185,height=440,bg="gray15",bd=0)
+    frame1221.bind('<MouseWheel>',lambda event: imageCanvas.yview_scroll(-int(event.delta/60),"units"))
+    imageCanvas.create_window((0,0),window=frame1221,anchor='nw')
 
     win.mainloop()
 
 def abc(event):   
-    
     def on_press(key):
         if str(key)=="'p'":
             event.set()
-    
     def on_release(key):
         pass
-    
     with Listener(on_press=on_press, on_release=on_release) as listener:
             listener.join()
-
 if __name__ == "__main__":
     event=mp.Event()
     p = mp.Process(target=abc,args=(event,))
