@@ -1,0 +1,11 @@
+머신러닝 기법에 딥러닝 포함됨
+머신러닝 -> 데이터 전처리 필요, 데이터의 특징을 스스로 추출하지 못함
+딥러닝 -> 특성 추출과 분류를 스스로 처리함, 장시간 훈련, 대용량 데이터 필요
+
+머신러닝 
+  - 지도학습 : Label, Training Data Set 제공 -> Classification
+  - 비지도학습 : Label 제공 x -> Clustering
+  - 강화학습 : Agent, Environment, Action -> 보상이 커지는 Action을 취함
+
+딥러닝
+  - Overfitting/Underfitting : 
