@@ -8,4 +8,12 @@
   - 강화학습 : Agent, Environment, Action -> 보상이 커지는 Action을 취함
 
 딥러닝
-  - Overfitting/Underfitting : 
+  - Overfitting : test data set을 과도하게 학습하여 test data set에서의 error는 줄어들지만, trainning data set에 대해서는 error가 발생
+                  Optimization을 위해 SVM 등의 알고리즘 사용 
+  - 은닉층이 많을수록 성능이 좋아지지만, overfitting 발생 확률 증가
+  - Model define : 신경망 생성
+  - Model Compile : Activation function, Loss function, Optimizer 선택
+  - Model trainning : 한번에 처리할 데이터 양 / epoch(훈련 횟수, 동일한 data set에 대한 학습 횟수) 지정
+                      학습 속도와 메모리 고려
+  - 심층신경망(DNN) : 입력층, 다수의 은닉층, 출력층으로 구성
+  - 역전파(Backpropagation) : x -> w1 -> w2 -> y 각 가중치 w1과 w2에 대한 오차의 편미분값을 계산, 각 가중치가 오차에 얼마나 영향을 끼치는지를 알기 위함
