@@ -4,6 +4,12 @@
 
 머신러닝 
   - 지도학습 : Label, Training Data Set 제공 -> Classification
+      -KNN(K-Nearest Neighbor) : 데이터 분류, 기존 데이터를 통해서 모델을 생성하는 것이 아니라 새로운 데이터를 받을 때마다 비교를 수행하며 모델 수정
+                                 새로운 데이터를 최근접한 K개의 데이터 중 더 많이 해당하는 cluster에 분류
+      -SVM(Suport Vector Machine) : Decision boundary를 기준으로 데이터가 어느 쪽에 속하는지 분류, Decision boundary는 어느 한쪽으로 치우쳐지지 않는 것이 핵심
+                                    Suport vector -> Decision boundary와 근접한 데이터
+                                    Margin -> Suport vector와 Decision boundary 간의 거리, Margin이 최대가 될 때 가장 안정적
+        
   - 비지도학습 : Label 제공 x -> Clustering
   - 강화학습 : Agent, Environment, Action -> 보상이 커지는 Action을 취함
 
@@ -17,3 +23,5 @@
                       학습 속도와 메모리 고려
   - 심층신경망(DNN) : 입력층, 다수의 은닉층, 출력층으로 구성
   - 역전파(Backpropagation) : x -> w1 -> w2 -> y 각 가중치 w1과 w2에 대한 오차의 편미분값을 계산, 각 가중치가 오차에 얼마나 영향을 끼치는지를 알기 위함
+  - One-Hot incoding : 고윳값을 0, 1로 나타내는 방법
+
