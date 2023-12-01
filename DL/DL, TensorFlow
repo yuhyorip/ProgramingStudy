@@ -9,7 +9,13 @@
       -SVM(Suport Vector Machine) : Decision boundary를 기준으로 데이터가 어느 쪽에 속하는지 분류, Decision boundary는 어느 한쪽으로 치우쳐지지 않는 것이 핵심
                                     Suport vector -> Decision boundary와 근접한 데이터
                                     Margin -> Suport vector와 Decision boundary 간의 거리, Margin이 최대가 될 때 가장 안정적
-        
+                                    선형 분류에는 Linear Kernel / 비선형 분류에는 Gousian RBF Kernel , Polynomial Kernel
+      -Decision Tree : 불순도(서로 다른 cluster의 데이터가 섞여있는 정도)와 불확실성이 감소하는 방향으로 학습
+                       Entropy -> 확률 변수의 불확실성
+                                  entropy=0 -> 불확실성 최소 -> 순도 최대
+                       Gini index(지니 계수) -> 불순도 측정 지표, gini index가 높을 수록 데이터가 분산되어 있음 = 섞여 있음 = 불순도 높음
+      -Regression 
+          - jonna jolim
   - 비지도학습 : Label 제공 x -> Clustering
   - 강화학습 : Agent, Environment, Action -> 보상이 커지는 Action을 취함
 
