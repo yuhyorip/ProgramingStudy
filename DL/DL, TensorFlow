@@ -16,7 +16,18 @@
                        Gini index(지니 계수) -> 불순도 측정 지표, gini index가 높을 수록 데이터가 분산되어 있음 = 섞여 있음 = 불순도 높음
       -Regression 
           - jonna jolim
-  - 비지도학습 : Label 제공 x -> Clustering
+  - 비지도학습 : Label 제공 x
+      - KMC(K-Mean Clustering) : K개의 중심점을 잡고 각 데이터들간의 distance를 계산하여 가까운 중심점으로 군집화, 이후 중심점을 바꾸어가며 군집이 변하지 않을 때까지 반복
+                                 non-linear data 이거나 cluster 간 크기 혹은 density(밀집도)의 차이가 클 때는 의도한 바와 다르게 군집이 형성될 수 있음
+                                 K가 커질 수록 SSD(Sum of Squared distances)이 0에 가까워지는 경향, 각 data가 그 자체로 하나의 군집으로 형성되기 때문에 distance -> 0
+      - DBSCAN(Density Based Spatial Clustering of Applications with Noise, 밀도 기반 군집 분석) : distance가 아닌 density를 기준으로 cluster 형성, KMC보다 비선형 데이터를 분류하는데 용이
+                                                                                                 Noise와 Outlier의 영향을 받지 않음
+                                                                                                (Noise -> data preproccessing을 통해 제거해야 하는 무관하거나 무작위한 data / Outlier -> data 범위에서 벗어난 data)
+                -> 중심점, Epsilon, minPts 결정 : epsilon은 중심점을 기준으로 cluster의 반경, minPts는 cluster로 형성되기 위해 필요한 최소 data 수
+                -> cluster 확장 : 한 cluster에 해당하는 data들을 다시 중심점으로 잡으며 epsilon과 minPts를 충족하는 다른 data를 cluster에 포함시킴
+                -> repeat / Noise define : 반복 후 어떤 군집에도 해당하지 않는 data를 Noise로 정의
+      - PCA(Principal Component Analysis, 주성분 분석) : 고차원 data를 저차원으로 축소, data의 특성이 너무 많아 성능이 저하될 수 있을때 사용 
+                                                       여러 data가 모여 cluster를 이룰 때, 몇 개의 data만으로 cluster의 분포를 설명할 수 있다면 그 data만을 변수로 사용하겠다는 것
   - 강화학습 : Agent, Environment, Action -> 보상이 커지는 Action을 취함
 
 딥러닝
